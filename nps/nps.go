@@ -81,8 +81,46 @@ func legalSolutionList() (s *map[string]bool) {
 
 }
 
-func itrOverOperators(s string) {
-	//PICK UP FROM HERE
+func itrOverOperators(s string, numOperators int) {
+	operList := make([]int, numOperators)
+
+	/*
+
+		for i := 0; i < numOperators; i++ {
+			sum := s
+			for j := 0; j < 4; j++ {
+				operList[i] = j
+
+				fmt.Println(operList)
+
+				for _, oper := range operList {
+					//fmt.Println(oper)
+					operator := ""
+					switch oper {
+					case 0:
+						operator = "+"
+					case 1:
+						operator = "-"
+					case 2:
+						operator = "*"
+					case 3:
+						operator = "/"
+
+					}
+					sum = strings.Replace(sum, "O", operator, 1)
+				}
+
+			}
+
+			operList[i] = 0
+
+			//fmt.Println(sum)
+			//reversePolishSolve(sum)
+
+
+		}
+	*/
+
 }
 
 func itrOverLegalNumbers(numList []int, sol string) {
@@ -104,7 +142,7 @@ func itrOverLegalNumbers(numList []int, sol string) {
 			}
 		}
 
-		itrOverOperators(solStr)
+		itrOverOperators(solStr, numCount-1)
 
 	}
 }
