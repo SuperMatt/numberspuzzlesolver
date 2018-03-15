@@ -1,52 +1,150 @@
 package nps
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 var operators = map[string]bool{"+": true, "-": true, "*": true, "/": true}
 
-//Solver will solve a countdown style numbers puzzle.
-//func Solver(a, b, c, d, e, f int) (results []string, err error) {
-//
-//}
+func isLegal(a, b, c, d, e, f int) bool {
+	var legalMap = map[int]int{100: 1,
+		75: 1,
+		50: 1,
+		25: 1,
+		10: 2,
+		9:  2,
+		8:  2,
+		7:  2,
+		6:  2,
+		5:  2,
+		4:  2,
+		3:  2,
+		2:  2,
+		1:  2}
 
-func reversePolishToBrackets(rpn string) (s string) {
-	fmt.Println(rpn)
-	ignore := 0
-	lastNumPos := 0
-	startIgnore := 0
-	endIgnore := 0
-	var intermediateString []string
-	for k, v := range rpn {
-		if string(v) == "(" {
-			ignore++
-			if ignore == 1 {
-				startIgnore = k
+	haveMap := map[int]int{}
+	haveMap[a]++
+	haveMap[b]++
+	haveMap[c]++
+	haveMap[d]++
+	haveMap[e]++
+	haveMap[f]++
+
+	for k, v := range haveMap {
+		if v > legalMap[k] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getMoreSolutions(s string) []string {
+	newList := []string{s}
+	l := strings.Split(s, "")
+	if len(l) > 9 {
+		return newList
+	}
+	for k, v := range l {
+		if v == "N" {
+			var ns []string
+			if k != 0 {
+				ns = append(ns, l[:k]...)
 			}
-		} else if string(v) == ")" {
-			ignore--
-			if ignore == 0 {
-				endIgnore = k
+			ns = append(ns, "NNO")
+			if k < len(l) {
+				ns = append(ns, l[k+1:]...)
+			}
+			newList = append(newList, getMoreSolutions(strings.Join(ns, ""))...)
+		}
+	}
+
+	return newList
+
+}
+
+func legalSolutionList() (s *map[string]bool) {
+	baseSolution := "NNO"
+	allSolutions := getMoreSolutions(baseSolution)
+
+	solutionMap := make(map[string]bool)
+
+	for _, solution := range allSolutions {
+
+		solutionMap[solution] = true
+	}
+
+	return &solutionMap
+
+}
+
+func itrOverOperators(s string) {
+	//PICK UP FROM HERE
+}
+
+func itrOverLegalNumbers(numList []int, sol string) {
+	numCount := (len(sol) + 1) / 2
+	for i := int64(1); i < 64; i++ {
+		rpn := strings.Split(sol, "")
+		solStr := strings.Join(rpn, " ")
+		binRep := fmt.Sprintf("%06b", i)
+		letterCount := strings.Count(binRep, "1")
+
+		if letterCount != numCount {
+			continue
+		}
+
+		for k, v := range binRep {
+			number := strconv.Itoa(numList[k])
+			if string(v) == "1" {
+				solStr = strings.Replace(solStr, "N", number, 1)
 			}
 		}
 
-		if ignore == 0 {
-			lastNumPos = k
-
-			if _, ok := operators[string(v)]; ok {
-				ns := "(" + rpn[lastNumPos] + string(v) + rpn[startIgnore:endIgnore] + ")"
-				if k < len(sl)-1 {
-					ns = append(ns, sl[k:]...)
-				}
-
-				return reversePolishToBrackets(strings.Join(ns, " "))
-			}
-		} else {
-			intermediateString = append(intermediateString, v)
-		}
+		itrOverOperators(solStr)
 
 	}
-	return s
+}
+
+func findAllSolutions(numList []int, solutions *map[string]bool) {
+	for sol := range *solutions {
+		itrOverLegalNumbers(numList, sol)
+	}
+}
+
+//Solver will solve a countdown style numbers puzzle.
+func Solver(target, a, b, c, d, e, f int) (results []string, err error) {
+	if !isLegal(a, b, c, d, e, f) {
+		return results, errors.New("Number combination is not legal for Countdown")
+	}
+
+	solutions := legalSolutionList()
+
+	numList := []int{a, b, c, d, e, f}
+
+	findAllSolutions(numList, solutions)
+
+	return results, err
+}
+
+func reversePolishToBrackets(rpn []string) (s []string) {
+	if len(rpn) > 1 {
+		for k, v := range rpn {
+			if _, ok := operators[v]; ok {
+				s := "(" + rpn[k-2] + v + rpn[k-1] + ")"
+				var ns []string
+				ns = append(ns, rpn[:k-2]...)
+				ns = append(ns, s)
+				if k < len(rpn)-1 {
+					ns = append(ns, rpn[k+1:]...)
+				}
+				return reversePolishToBrackets(ns)
+			}
+		}
+	}
+
+	return rpn
 }
