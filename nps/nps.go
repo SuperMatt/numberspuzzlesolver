@@ -3,6 +3,7 @@ package nps
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -81,46 +82,91 @@ func legalSolutionList() (s *map[string]bool) {
 
 }
 
+func solve(s string) float64 {
+	fmt.Println(s)
+	equation := strings.Split(s, " ")
+	if len(equation) == 1 {
+		a, _ := strconv.ParseFloat(equation[0], 64)
+		return float64(a)
+	}
+	var res float64
+	for k, v := range equation {
+		var a float64
+		var b float64
+		if v == "+" {
+			a, _ = strconv.ParseFloat(equation[k-2], 64)
+			b, _ = strconv.ParseFloat(equation[k-1], 64)
+			res = float64(a) + float64(b)
+		} else if v == "-" {
+			a, _ = strconv.ParseFloat(equation[k-2], 64)
+			b, _ = strconv.ParseFloat(equation[k-1], 64)
+			res = float64(a) - float64(b)
+		} else if v == "*" {
+			a, _ = strconv.ParseFloat(equation[k-2], 64)
+			b, _ = strconv.ParseFloat(equation[k-1], 64)
+			res = float64(a) * float64(b)
+		} else if v == "/" {
+			a, _ = strconv.ParseFloat(equation[k-2], 64)
+			b, _ = strconv.ParseFloat(equation[k-1], 64)
+			res = float64(a) / float64(b)
+		} else {
+			continue
+		}
+
+		var ne []string
+		ne = append(ne, equation[:k-2]...)
+		ne = append(ne, strconv.FormatFloat(res, 'E', -1, 64))
+		ne = append(ne, equation[k+1:]...)
+
+		return solve(strings.Join(ne, " "))
+	}
+
+	return 0
+}
+
 func itrOverOperators(s string, numOperators int) {
-	operList := make([]int, numOperators)
+	maxBytes := math.Pow(2, float64(numOperators*2))
 
-	/*
+	var br string
+	switch numOperators {
+	case 1:
+		br = "%02b"
+	case 2:
+		br = "%04b"
+	case 3:
+		br = "%06b"
+	case 4:
+		br = "%08b"
+	case 5:
+		br = "%010b"
+	}
 
-		for i := 0; i < numOperators; i++ {
-			sum := s
-			for j := 0; j < 4; j++ {
-				operList[i] = j
-
-				fmt.Println(operList)
-
-				for _, oper := range operList {
-					//fmt.Println(oper)
-					operator := ""
-					switch oper {
-					case 0:
-						operator = "+"
-					case 1:
-						operator = "-"
-					case 2:
-						operator = "*"
-					case 3:
-						operator = "/"
-
-					}
-					sum = strings.Replace(sum, "O", operator, 1)
-				}
-
+	for i := 0; i < int(maxBytes); i++ {
+		rpn := s
+		b := fmt.Sprintf(br, i)
+		opers := make([]string, numOperators)
+		for j := 0; j < len(b); j += 2 {
+			switch oper := b[j : j+2]; oper {
+			case "00":
+				opers[(j+1)/2] = "+"
+			case "01":
+				opers[(j+1)/2] = "-"
+			case "10":
+				opers[(j+1)/2] = "*"
+			case "11":
+				opers[(j+1)/2] = "/"
 			}
 
-			operList[i] = 0
-
-			//fmt.Println(sum)
-			//reversePolishSolve(sum)
-
-
 		}
-	*/
 
+		for k := 0; k < numOperators; k++ {
+			rpn = strings.Replace(rpn, "O", opers[k], 1)
+		}
+
+		res := solve(rpn)
+		resstr := strconv.FormatFloat(res, 'f', -1, 64)
+		fmt.Println(resstr)
+	}
 }
 
 func itrOverLegalNumbers(numList []int, sol string) {
@@ -145,6 +191,7 @@ func itrOverLegalNumbers(numList []int, sol string) {
 		itrOverOperators(solStr, numCount-1)
 
 	}
+
 }
 
 func findAllSolutions(numList []int, solutions *map[string]bool) {

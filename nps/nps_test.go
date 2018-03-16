@@ -32,3 +32,7 @@ func TestLegalSolutionsList(t *testing.T) {
 func TestSolver(t *testing.T) {
 	Solver(999, 100, 75, 1, 2, 3, 4)
 }
+
+func TestSolve(t *testing.T) {
+	t.Log(solve("6 75 * 50 / 100 3 + * 25 +"))
+}
