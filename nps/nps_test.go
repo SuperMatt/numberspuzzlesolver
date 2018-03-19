@@ -30,7 +30,11 @@ func TestLegalSolutionsList(t *testing.T) {
 }
 
 func TestSolver(t *testing.T) {
-	Solver(999, 100, 75, 1, 2, 3, 4)
+	r, _ := Solver(100, 75, 50, 25, 6, 3)
+	//r, _ := Solver(3, 6, 25, 50, 75, 100)
+	if _, ok := r["952"]; !ok {
+		t.Fail()
+	}
 }
 
 func TestSolve(t *testing.T) {

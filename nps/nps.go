@@ -83,7 +83,6 @@ func legalSolutionList() (s *map[string]bool) {
 }
 
 func solve(s string) float64 {
-	fmt.Println(s)
 	equation := strings.Split(s, " ")
 	if len(equation) == 1 {
 		a, _ := strconv.ParseFloat(equation[0], 64)
@@ -101,6 +100,7 @@ func solve(s string) float64 {
 			a, _ = strconv.ParseFloat(equation[k-2], 64)
 			b, _ = strconv.ParseFloat(equation[k-1], 64)
 			res = float64(a) - float64(b)
+
 		} else if v == "*" {
 			a, _ = strconv.ParseFloat(equation[k-2], 64)
 			b, _ = strconv.ParseFloat(equation[k-1], 64)
@@ -124,7 +124,8 @@ func solve(s string) float64 {
 	return 0
 }
 
-func itrOverOperators(s string, numOperators int) {
+func itrOverOperators(s string, numOperators int) (m map[string][]string) {
+	m = make(map[string][]string)
 	maxBytes := math.Pow(2, float64(numOperators*2))
 
 	var br string
@@ -165,11 +166,16 @@ func itrOverOperators(s string, numOperators int) {
 
 		res := solve(rpn)
 		resstr := strconv.FormatFloat(res, 'f', -1, 64)
+		brackets := strings.Join(reversePolishToBrackets(strings.Split(rpn, " ")), " ")
 		fmt.Println(resstr)
+		fmt.Println(brackets)
+		m[resstr] = append(m[resstr], brackets)
 	}
+
+	return m
 }
 
-func itrOverLegalNumbers(numList []int, sol string) {
+func itrOverLegalNumbers(numList []int, sol string) (m map[string][]string) {
 	numCount := (len(sol) + 1) / 2
 	for i := int64(1); i < 64; i++ {
 		rpn := strings.Split(sol, "")
@@ -188,31 +194,34 @@ func itrOverLegalNumbers(numList []int, sol string) {
 			}
 		}
 
-		itrOverOperators(solStr, numCount-1)
+		return itrOverOperators(solStr, numCount-1)
 
 	}
+
+	return m
 
 }
 
-func findAllSolutions(numList []int, solutions *map[string]bool) {
+func findAllSolutions(numList []int, solutions *map[string]bool) (m map[string][]string) {
 	for sol := range *solutions {
-		itrOverLegalNumbers(numList, sol)
+		return itrOverLegalNumbers(numList, sol)
 	}
+
+	return m
 }
 
 //Solver will solve a countdown style numbers puzzle.
-func Solver(target, a, b, c, d, e, f int) (results []string, err error) {
+func Solver(a, b, c, d, e, f int) (m map[string][]string, err error) {
 	if !isLegal(a, b, c, d, e, f) {
-		return results, errors.New("Number combination is not legal for Countdown")
+		return m, errors.New("Number combination is not legal for Countdown")
 	}
 
 	solutions := legalSolutionList()
 
 	numList := []int{a, b, c, d, e, f}
 
-	findAllSolutions(numList, solutions)
+	return findAllSolutions(numList, solutions), nil
 
-	return results, err
 }
 
 func reversePolishToBrackets(rpn []string) (s []string) {
